@@ -1,0 +1,129 @@
+<div class="row w-75 mx-auto" >
+    <h4>Project Details</h4>
+     <!-- Displaying a project -->
+    <% if @project %>
+        <h5> Title: </h5>
+        <p><%= @project.title %></p>
+        <h5> Description: </h5>
+        <p><%= @project.description %></p>
+
+        <p><%= button_to 'Project Members', member_path(@project.id), method: :get, class: 'btn btn-primary' %></p>
+        <hr>
+    <% end %>
+
+    <!-- Displaying a file attached to projects -->
+    <% if @project.files.attached? %>
+        <h6>Files attached </h6>
+        <table class="table" >
+            <tr>
+                <th>File name</th>
+                <th>Download link</th>
+            </tr>
+            <% @project.files.each do |file| %>
+                
+                <tr>
+                    <td>
+                        <%= file.filename %>
+                        (<%= number_to_human_size(file.byte_size) %>)
+                    </td>
+                    <td> 
+                        <%= link_to "#{file.filename}", file.url %>    
+                    </td>            
+                </tr>
+            <% end %>
+        </table>
+        <hr>
+    <% end %>
+    
+    <!-- Displaying form for file attachment -->
+    <%= form_with(model:[@project], url: attach_path(@project.id)) do |f| %>
+        <%= f.label :Files, class: "form-label" %><br>
+        <%= f.file_field :files, multiple: true %><br>
+        <%= f.submit "save", class: "btn btn-primary" %>
+        <hr>
+    <% end %>
+
+    <!-- Displaying form for addition of member of by admin and project admin -->
+    <% if current_user.status == "administrator" || @status == "admin" %>
+        <div class="row mt-1 mb-1 p-1" style="width: 40%">
+            <p style="margin-bottom:0; font-weight:bold">Add a member to the project<p>
+            <%= form_with(model: [@project, @projectMember], url: project_project_members_path(@project.id)) do |f| %>
+                <%= f.label :email, class: "form-label" %><br>
+                <%= f.email_field :email, class: "form-control" %>
+                <%= f.submit "Add" %>
+            <% end %>
+        </div>
+    <% end %>
+</div>
+<hr>
+
+<!-- Discussion and Commnets section -->
+<div class="row w-75 mx-auto" >
+    <h5>Discussion and comments</h5>
+        <!-- Display for Dissussion -->
+        <% if @threads %>
+                 <!-- Displays each Thread if any -->
+                <% @threads.each do |t| %>
+                    <div class ="row mb-4" style="border: 1px solid black; width: 80%">
+                        <div class="mt-1 mb-1 p-1">
+                            <p> <span style="font-weight:500"> Discusion Topic: </span> <%= t.details %> 
+                                <% if current_user.status == "administrator" || @status == "admin" %>
+                                    <span style="font-weight:500"> 
+                                        <%= link_to edit_project_discussion_path(t.project_id, t.id), method: :get, class: "text-decoration-none", style: "color:blue" do %>
+                                            <i class="bi bi-pen-fill"></i>
+                                        <% end %>
+                                    </span>
+                                    <span style="font-weight:500"> 
+                                        <%= link_to project_discussion_path(t.project_id, t.id), data: { "turbo-method": :delete }, class: "text-decoration-none", style: "color:red" do %>
+                                            <i class="bi bi-trash"></i>
+                                        <% end %>
+                                    </span>
+                                <% end %>
+                            </p>
+                            
+                            <% if t.opinions.count > 0 %>
+                                 <!-- Display each comment belonging to a Thread if any -->
+                                <h6>Comments:</h6>
+                                <% t.opinions.each do |c| %>
+                                    <p><b><em><%= c.comment_by%>:</em></b> <%= c.details %> 
+                                        <% if current_user.status == "administrator" || @status == "admin" || c.comment_by == "#{current_user.firstname} #{current_user.surname}" %>
+                                            <span style="font-weight:500"> 
+                                                <%= link_to edit_project_discussion_opinion_path(t.project_id, c.discussion_id, c.id), method: :get, class: "text-decoration-none", style: "color:blue" do %>
+                                                    <i class="bi bi-pen-fill"></i>
+                                                <% end %>
+                                            </span>
+                                            <span style="font-weight:500">                                             
+                                                <%= link_to project_discussion_opinion_path(t.project_id, c.discussion_id, c.id), data: { "turbo-method": :delete }, class: "text-decoration-none", style: "color:red" do %>
+                                                    <i class="bi bi-trash"></i>
+                                                <% end %>
+                                            </span>
+                                        <% end %>
+                                    </p>
+                                <% end %>
+                            <% end %>
+                        </div> 
+                         <!-- Form for adding comment to a THread -->
+                        <div class="mt-1 mb-1 p-1">
+                            <%= form_with(model: [@project, @discussion, @opinion], url: project_discussion_opinions_path(t.project_id, t.id)) do |f| %>
+                                <%= f.label :comment, class: "form-label" %><br>
+                                <%= f.text_field :details, class: "form-control" %>
+                                <%= f.submit "comment" %>
+                            <% end %>
+                        </div>
+                    </div>
+                <% end %>             
+        <% end %>
+         <!-- Form for Starting a thread -->
+        <% if current_user.status == "administrator" || @status == "admin" %>
+            <div class ="row mt-3 mb-3 p-1" style="border: 1px solid black; width: 80%">
+                <h6>New discussion</h6>
+                <div>
+                <%= form_with(model: [@project, @discussion], url: project_discussions_path(@project.id)) do |f| %>
+                    <%= f.label :Thread, class: "form-label" %><br>
+                    <%= f.text_field :details, class: "form-control" %><br>
+                    <%= f.submit "save" %>    
+                <% end %>
+                </div>
+            </div>
+        <% end %>
+</div>

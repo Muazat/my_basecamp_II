@@ -1,0 +1,46 @@
+<div class="row w-50 mx-auto" >
+    <p class="w-100 text-center">
+        Welcome to your dashboard
+        <% if current_user.status == "administrator" %>
+           <span style="color:green; font-weight: bold"> <%= "#{current_user.surname} #{current_user.firstname}" %> </span>
+        <% else %>
+            <span style="color:purple; font-weight: bold"> <%= "#{current_user.surname} #{current_user.firstname}" %> </span>
+        <% end %>
+    </p>
+</div>
+<div class="row w-75 mx-auto">
+    <h4>Projects</h4>
+    <% if @projects %>
+        <table class="table" >
+            <tr>
+                <th>Title</th>
+                <th>Created by</th>
+                <th>Actions</th>
+            </tr>
+            <% @projects.each do |project| %>
+                <tr>
+                    <td> <%= project.title %> </td>
+                    <td> <%= project.created_by %> </td>
+                    <td>
+                        <button type="button" class="btn btn-primary">
+                            <%= link_to "details", project_path(project.id), method: :get, style:"color:white", class: "text-decoration-none" %>
+                        </button>
+                        <% if current_user.status == "administrator" || @my_hash[project.id] == "admin" %>
+                            <button type="button" class="btn btn-secondary">
+                                <%= link_to "edit", edit_project_path(project.id), method: :get, class: "text-decoration-none", style: "color:white" %>
+                            </button>
+                            <button type="button" class="btn btn-danger">
+                                <%= link_to "delete", project_path(project.id), data: { "turbo-method": :delete }, class: "text-decoration-none", style: "color:white" %>
+                            </button>
+                        <% end %>
+                    </td>
+                </tr>
+            <% end %>
+        </table>
+    <% else %>
+        <div>
+            <h6> No Project Available</h6>
+        </div>
+    <% end %>
+
+</div>

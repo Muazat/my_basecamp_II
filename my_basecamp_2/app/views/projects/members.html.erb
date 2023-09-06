@@ -1,0 +1,45 @@
+<div class="row w-50 mx-auto" >
+    <p class="w-100 text-center">
+        Welcome to your dashboard
+        <% if current_user.status == "administrator" %>
+           <span style="color:green; font-weight: bold"> <%= "#{current_user.surname} #{current_user.firstname}" %> </span>
+        <% else %>
+            <span style="color:purple; font-weight: bold"> <%= "#{current_user.surname} #{current_user.firstname}" %> </span>
+        <% end %>
+    </p>
+</div>
+<div class="row w-75 mx-auto">
+    <h4> Title: <%= @project.title %> </h4>
+    <h5> Project Members </h5>
+    <% if @projectmembers %>
+        <table class="table" >
+            <tr>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Status</th>
+                <% if current_user.status == "administrator" || @status == 'admin' %>
+                    <th width="35%">Action</th>
+                <% end %>
+            </tr>
+            <% @projectmembers.each do |u| %>
+                <tr>
+                    <td> <%= @my_users[u.id][1] %>
+                    <td> <%= @my_users[u.id][0] %>
+                    <td> <%= u.status %></td>
+
+                    <% if current_user.status == "administrator" || @status == 'admin' %>
+                        <td>                           
+                            <button type="button" class="btn btn-primary">
+                                <%= link_to "Change status", project_project_member_path(@project.id, u.id), data: { "turbo-method": :put }, style:"color:white", class: "text-decoration-none" %>
+                            </button>
+                            <button type="button" class="btn btn-danger">
+                                <%= link_to "delete", project_project_member_path(@project.id, u.id), data: { "turbo-method": :delete }, class: "text-decoration-none", style: "color:white" %>
+                            </button>
+                        </td>
+                    <% end %>
+                </tr>
+            <% end %>
+        </table>
+    <% end %>
+
+</div>
